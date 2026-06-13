@@ -1,0 +1,11 @@
+const express = require('express');
+const router = express.Router();
+const { getInvestments, addInvestment, updateInvestment, deleteInvestment, getPortfolioSummary, getMarketWatchlist } = require('../controllers/investmentController');
+const { protect } = require('../middleware/auth');
+router.get('/', protect, getInvestments);
+router.post('/', protect, addInvestment);
+router.put('/:id', protect, updateInvestment);
+router.delete('/:id', protect, deleteInvestment);
+router.get('/portfolio', protect, getPortfolioSummary);
+router.get('/watchlist', protect, getMarketWatchlist);
+module.exports = router;
