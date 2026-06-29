@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useGoogleLogin } from '@react-oauth/google'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
-import { RiEyeLine, RiEyeOffLine, RiGoogleLine, RiLockLine, RiMailLine } from 'react-icons/ri'
+import GoogleAuthButton from '../components/GoogleAuthButton'
+import { RiEyeLine, RiEyeOffLine, RiLockLine, RiMailLine } from 'react-icons/ri'
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { login, googleLogin } = useAuth()
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -25,19 +25,6 @@ export default function Login() {
     } finally { setLoading(false) }
   }
 
-  const handleGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${tokenResponse.access_token}` } })
-        const profile = await res.json()
-        const user = await googleLogin({ googleId: profile.sub, email: profile.email, name: profile.name, avatar: profile.picture })
-        toast.success(`Welcome, ${user.name}!`)
-        navigate(user.onboardingCompleted ? '/dashboard' : '/onboarding')
-      } catch { toast.error('Google login failed') }
-    },
-    onError: () => toast.error('Google login failed'),
-  })
-
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       <div className="mb-8">
@@ -49,9 +36,9 @@ export default function Login() {
         <p className="text-gray-400 mt-1">Sign in to your financial dashboard</p>
       </div>
 
-      <button onClick={() => handleGoogle()} className="w-full flex items-center justify-center gap-3 bg-surface-700 hover:bg-surface-600 border border-surface-500 text-white font-medium py-3 px-4 rounded-xl transition-all duration-200 mb-6">
-        <RiGoogleLine className="text-lg" />Continue with Google
-      </button>
+      <div className="mb-6">
+        <GoogleAuthButton />
+      </div>
 
       <div className="flex items-center gap-3 mb-6">
         <div className="flex-1 h-px bg-surface-600" />

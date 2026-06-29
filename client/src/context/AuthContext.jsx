@@ -53,8 +53,8 @@ export const AuthProvider = ({ children }) => {
     return data.user;
   };
 
-  const googleLogin = async (googleData) => {
-    const { data } = await authAPI.googleAuth(googleData);
+  const googleLogin = async (accessToken) => {
+    const { data } = await authAPI.googleAuth({ accessToken });
     saveAuth(data.token, data.user);
     return data.user;
   };

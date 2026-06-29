@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { sendEmail } = require('../services/emailService');
+const { verifyGoogleAccessToken } = require('../utils/googleAuth');
 
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
 
@@ -38,20 +39,43 @@ exports.login = async (req, res) => {
 
 exports.googleAuth = async (req, res) => {
   try {
-    const { googleId, email, name, avatar } = req.body;
+    const { accessToken } = req.body;
+    if (!accessToken) {
+      return res.status(400).json({ success: false, message: 'Google access token is required' });
+    }
+
+    const { googleId, email, name, avatar } = await verifyGoogleAccessToken(accessToken);
+
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
     if (!user) {
       user = await User.create({ name, email, googleId, avatar, isVerified: true, onboardingCompleted: false });
-    } else if (!user.googleId) {
-      user.googleId = googleId;
+    } else {
+      if (!user.googleId) user.googleId = googleId;
       user.isVerified = true;
-      if (avatar) user.avatar = avatar;
+      if (avatar && !user.avatar) user.avatar = avatar;
+      user.lastLogin = Date.now();
       await user.save({ validateBeforeSave: false });
     }
+
     const token = generateToken(user._id);
-    res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, role: user.role, onboardingCompleted: user.onboardingCompleted, avatar: user.avatar, level: user.level, xp: user.xp, badges: user.badges } });
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        onboardingCompleted: user.onboardingCompleted,
+        avatar: user.avatar,
+        level: user.level,
+        xp: user.xp,
+        badges: user.badges,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    const status = error.message.includes('not configured') ? 503 : 401;
+    res.status(status).json({ success: false, message: error.message || 'Google authentication failed' });
   }
 };
 

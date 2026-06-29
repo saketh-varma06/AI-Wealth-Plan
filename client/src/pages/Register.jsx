@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
+import GoogleAuthButton from '../components/GoogleAuthButton'
 import { RiUserLine, RiMailLine, RiLockLine, RiEyeLine, RiEyeOffLine } from 'react-icons/ri'
 
 export default function Register() {
@@ -31,6 +32,16 @@ export default function Register() {
       <div className="mb-8">
         <h1 className="font-display text-3xl font-bold text-white">Create account</h1>
         <p className="text-gray-400 mt-1">Start your journey to financial freedom</p>
+      </div>
+
+      <div className="mb-6">
+        <GoogleAuthButton label="Sign up with Google" />
+      </div>
+
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex-1 h-px bg-surface-600" />
+        <span className="text-xs text-gray-500">or register with email</span>
+        <div className="flex-1 h-px bg-surface-600" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
